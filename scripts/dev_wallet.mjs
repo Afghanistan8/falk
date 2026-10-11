@@ -4,6 +4,9 @@
  *
  *   node scripts/dev_wallet.mjs            # starts the signer on http://127.0.0.1:3099
  *
+ * Fault injection for UI tests: window.__devWallet.mode = "deny" (user rejects) or "short"
+ * (sends 1 wei less than asked, which the contract must refuse).
+ *
  * It holds throw-away keys (derived from .arc/seed, never printed, gitignored)
  * and signs on request. Open the app, then in the browser console run the
  * snippet served at http://127.0.0.1:3099/inject.js to install a window.ethereum
@@ -58,7 +61,11 @@ const INJECT = (names, addrs) => `
       if (method === "eth_chainId") return "0xf22f";
       if (method === "wallet_switchEthereumChain") return null;
       if (method === "eth_sendTransaction") {
-        const r = await call("/send", { index: current, tx: params[0] });
+        const mode = window.__devWallet.mode;
+        if (mode === "deny") { const e = new Error("User denied transaction signature"); e.code = 4001; throw e; }
+        const tx = { ...params[0] };
+        if (mode === "short" && tx.value && BigInt(tx.value) > 0n) tx.value = "0x" + (BigInt(tx.value) - 1n).toString(16);
+        const r = await call("/send", { index: current, tx });
         if (r.error) { const e = new Error(r.error); e.code = r.error.includes("denied") ? 4001 : -32000; throw e; }
         return r.hash;
       }
@@ -67,7 +74,7 @@ const INJECT = (names, addrs) => `
       return r.result;
     },
   };
-  window.__devWallet = { names, accounts, use(i) { current = i; emit("accountsChanged", [accounts[current]]); return accounts[current]; } };
+  window.__devWallet = { names, accounts, mode: "normal", use(i) { current = i; emit("accountsChanged", [accounts[current]]); return accounts[current]; } };
   console.log("dev wallet installed", names.map((n, i) => n + "=" + accounts[i]).join(" "));
 })();
 `;

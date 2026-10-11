@@ -106,6 +106,7 @@ export interface TxState {
   label?: string;
   message?: string;
   pending?: boolean;
+  by?: string | null;
 }
 
 /**
@@ -115,38 +116,45 @@ export interface TxState {
  */
 export function useTx(afterwards: () => Promise<unknown>) {
   const signer = useSigner();
-  const [tx, setTx] = useState<TxState>({ phase: "idle" });
+  const { address } = useWallet();
+  const [rawTx, setTx] = useState<TxState>({ phase: "idle" });
+  // A status belongs to the wallet that produced it; another account never inherits it.
+  const tx: TxState = rawTx.by === address ? rawTx : { phase: "idle" };
   const [busy, setBusy] = useState(false);
 
   const run = useCallback(
     async (label: string, action: (client: FalkClient) => Promise<{ hash: string }>) => {
       if (!signer || busy) return;
       setBusy(true);
-      setTx({ phase: "wallet", label });
-      signer.setPhaseHandler((phase, hash) => setTx((t) => ({ ...t, phase, hash: hash ?? t.hash, label })));
+      setTx({ phase: "wallet", label, by: address });
+      signer.setPhaseHandler((phase, hash) => setTx((t) => ({ ...t, phase, hash: hash ?? t.hash, label, by: address })));
       try {
         const result = await action(signer);
-        await afterwards();
+        const fresh = await afterwards();
         setTx({
           phase: "done",
+          by: address,
           hash: result.hash,
           label,
-          message: `${label}: confirmed by the chain and state re-read.`,
+          message:
+            fresh === null
+              ? `${label}: confirmed by the chain, but the page could not re-read the new state. Use Retry to refresh.`
+              : `${label}: confirmed by the chain and state re-read.`,
         });
       } catch (e) {
         if (e instanceof PendingReceipt) {
-          setTx({ phase: "pending", hash: e.hash, label, pending: true, message: e.message });
+          setTx({ phase: "pending", by: address, hash: e.hash, label, pending: true, message: e.message });
           void afterwards();
         } else {
           const hash = (e as { hash?: string }).hash;
           const rejected = /reject|denied/i.test(e instanceof Error ? e.message : "");
-          setTx({ phase: rejected ? "rejected" : "failed", hash, label, message: describeRefusal(e) });
+          setTx({ phase: rejected ? "rejected" : "failed", by: address, hash, label, message: describeRefusal(e) });
         }
       } finally {
         setBusy(false);
       }
     },
-    [signer, busy, afterwards],
+    [signer, busy, afterwards, address],
   );
   return { tx, run, busy, canSign: Boolean(signer) };
 }

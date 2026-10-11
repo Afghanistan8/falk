@@ -8,7 +8,7 @@ import { addressUrl, txUrl } from "@/lib/config";
 import type { FalkClient } from "@/lib/falk";
 import { commitmentOf } from "@/lib/pure";
 import {
-  ACT_LABEL, ACTION_LABEL, RETRIEVAL_LABEL, RULING_LABEL, RULING_MEANING, STATE_NEXT,
+  ACT_LABEL, ACTION_LABEL, RETRIEVAL_LABEL, RULING_LABEL, RULING_MEANING, STATE_LABEL, STATE_NEXT,
   VERDICT_TONE, countdown, formatDuration, formatGen, formatTime, shortHash,
 } from "@/lib/present";
 import type { MandateStatus, Ruling } from "@/lib/protocol";
@@ -42,10 +42,17 @@ export function MandateWorkspace({ id }: { id: string }) {
       </div>
     );
   }
-  if (error || !bundle) return <div className="wrap section"><ReadError label="Could not read the mandate." message={error ?? ""} onRetry={() => void reload()} /></div>;
+  if (!bundle) return <div className="wrap section"><ReadError label="Could not read the mandate." message={error ?? ""} onRetry={() => void reload()} /></div>;
 
   return (
-    <Workspace bundle={bundle} address={address} onChain={onChain} now={now} tx={tx} run={run} busy={busy} canSign={canSign} reload={reload} />
+    <>
+      {error ? (
+        <div className="wrap" style={{ paddingTop: 16 }}>
+          <ReadError label="Could not refresh. Showing the last state read." message={error} onRetry={() => void reload()} />
+        </div>
+      ) : null}
+      <Workspace bundle={bundle} address={address} onChain={onChain} now={now} tx={tx} run={run} busy={busy} canSign={canSign} reload={reload} />
+    </>
   );
 }
 
@@ -241,7 +248,7 @@ function Workspace({ bundle, address, onChain, now, tx, run, busy, canSign, relo
           </dl>
           {settlement ? (
             <div className="notice go">
-              <strong>Settled · {ACTION_LABEL[settlement.action] ?? settlement.action}</strong> ({settlement.path.toLowerCase().replace("_", " ")}).{" "}
+              <strong>{m.status === "SETTLED" ? "Settled" : STATE_LABEL[m.status]} · {ACTION_LABEL[settlement.action] ?? settlement.action}</strong> ({settlement.path.toLowerCase().replace("_", " ")}).{" "}
               Operator received <Gen wei={settlement.operator_payout} />, client received <Gen wei={settlement.client_payout} />. Custody after: <Gen wei={settlement.custody_after} />.
             </div>
           ) : null}
