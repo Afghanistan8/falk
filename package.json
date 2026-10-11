@@ -1,0 +1,35 @@
+{
+  "name": "falk-studionet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Falk — evidence-backed verification and settlement of delegated work on GenLayer StudioNet.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:web": "node --test scripts/web.test.mjs",
+    "verify:live": "node scripts/check_live_deployment.mjs",
+    "verify:safety": "node scripts/verify_safety.mjs",
+    "arc": "node scripts/arc.mjs",
+    "vercel-build": "next build"
+  },
+  "dependencies": {
+    "genlayer-js": "^1.1.8",
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.1.17",
+    "@types/node": "22.19.15",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.6",
+    "postcss": "8.5.8",
+    "tailwindcss": "4.1.17",
+    "typescript": "5.9.3"
+  }
+}
