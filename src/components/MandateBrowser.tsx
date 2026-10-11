@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { STATE_LABEL, describeRefusal } from "@/lib/present";
 import type { MandateRow, MandateStatus } from "@/lib/protocol";
 import { useReader } from "@/lib/useFalk";
-import { Addr, Empty, Gen, StateBadge } from "./ui";
+import { Addr, Empty, Gen, ReadError, StateBadge } from "./ui";
 import { useWallet } from "./WalletProvider";
 
 type Filter = "all" | "mine" | "open" | "closed";
@@ -54,7 +54,7 @@ export function MandateBrowser() {
     });
   }, [rows, filter, query, address]);
 
-  if (error) return <div className="notice stop">Could not read the registry: {error}</div>;
+  if (error) return <ReadError label="Could not read the registry." message={error} />;
   if (!rows) return <div className="notice wait">Reading the registry from StudioNet…</div>;
 
   return (

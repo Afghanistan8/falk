@@ -102,3 +102,15 @@ export function Section({ title, children, aside }: { title: string; children: R
     </section>
   );
 }
+
+/** A read failure with a way out: retry the read, or reload if no retry is wired. */
+export function ReadError({ label, message, onRetry }: { label: string; message: string; onRetry?: () => void }) {
+  return (
+    <div className="notice stop" role="alert">
+      <strong>{label}</strong> {message}{" "}
+      <button className="btn ghost sm" onClick={onRetry ?? (() => window.location.reload())}>
+        Retry
+      </button>
+    </div>
+  );
+}

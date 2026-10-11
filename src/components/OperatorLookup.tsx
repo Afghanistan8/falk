@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { describeRefusal } from "@/lib/present";
 import type { MandateRow, Passport } from "@/lib/protocol";
 import { useReader } from "@/lib/useFalk";
-import { Empty, Gen, StateBadge } from "./ui";
+import { Empty, Gen, ReadError, StateBadge } from "./ui";
 import { useWallet } from "./WalletProvider";
 
 const pct = (n: number | null) => (n === null ? "—" : `${n}%`);
@@ -17,6 +17,7 @@ export function OperatorLookup() {
   const [input, setInput] = useState("");
   const [target, setTarget] = useState<string | null>(null);
   const [data, setData] = useState<{ target: string; passport: Passport; rows: MandateRow[] } | null>(null);
+  const [nonce, setNonce] = useState(0);
   const [failed, setFailed] = useState<{ target: string; message: string } | null>(null);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export function OperatorLookup() {
     return () => {
       alive = false;
     };
-  }, [reader, target]);
+  }, [reader, target, nonce]);
 
   const loading = Boolean(target) && data?.target !== target && failed?.target !== target;
   const error = failed && failed.target === target ? failed.message : null;
@@ -51,7 +52,7 @@ export function OperatorLookup() {
         <button className="btn" disabled={!valid} onClick={() => setTarget(input.trim())}>Look up</button>
         {address ? <button className="btn ghost" onClick={() => { setInput(address); setTarget(address); }}>Use my address</button> : null}
       </div>
-      {error ? <div className="notice stop">{error}</div> : null}
+      {error ? <ReadError label="Could not read the passport." message={error} onRetry={() => setNonce((n) => n + 1)} /> : null}
       {loading ? <div className="notice wait">Reading the passport…</div> : null}
       {!target && !loading ? <Empty>Enter an operator address to read their passport. Counts come only from settled mandates.</Empty> : null}
       {passport && target && !loading ? (

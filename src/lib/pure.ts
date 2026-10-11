@@ -59,6 +59,12 @@ function sentence(text: string): string {
 
 /** Turn a contract refusal into text a person can act on. */
 export function humanizeRefusal(message: string): string {
+  if (/rate limit/i.test(String(message))) {
+    return "StudioNet's public RPC limits each IP to about 500 requests per hour and that limit has been reached. Nothing was changed. Wait a few minutes and retry, or point the app at your own RPC (NEXT_PUBLIC_GENLAYER_RPC_URL).";
+  }
+  if (/failed to fetch|fetch failed|unknown rpc error|unexpected token '<'|econnreset|network ?error|load failed/i.test(String(message))) {
+    return "Could not reach GenLayer StudioNet (the network answered with an error or dropped the connection). Nothing was changed. Try again in a moment.";
+  }
   const raw = String(message || "").replace(/^.*?\[(EXPECTED|EXTERNAL|TRANSIENT|PANEL_ERROR)\]\s*/s, "");
   for (const [pattern, friendly] of REFUSALS) {
     if (friendly && pattern.test(raw)) return friendly;

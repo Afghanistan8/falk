@@ -33,7 +33,20 @@ function normalize(text: string): string {
  * the address of record, whether the on-chain source hashes to the manifest.
  * No database and no signer are involved.
  */
+let cached: { at: number; status: number; body: unknown } | null = null;
+const TTL_MS = 60_000;
+
 export async function GET() {
+  // The public RPC rate-limits by IP and serverless instances share IPs: serve a
+  // 60 s cache so a refresh storm costs a handful of upstream requests, not hundreds.
+  if (cached && Date.now() - cached.at < TTL_MS) return Response.json(cached.body, { status: cached.status, headers: { "x-health-cache": "hit" } });
+  const response = await compute();
+  const body = await response.clone().json();
+  if (response.status === 200) cached = { at: Date.now(), status: 200, body };
+  return response;
+}
+
+async function compute() {
   const rpcUrl = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL || deployment.rpcUrl;
   const address = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || deployment.contract.address) as `0x${string}`;
   const ofRecord = address.toLowerCase() === deployment.contract.address.toLowerCase();

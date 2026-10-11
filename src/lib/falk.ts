@@ -19,6 +19,18 @@ export interface Eip1193Provider {
   request: (args: { method: string; params?: unknown[] | object }) => Promise<unknown>;
 }
 
+/** Network-level failure (gateway error page, dropped connection), as opposed to a contract answer. */
+export function isRateLimited(error: unknown): boolean {
+  const m = error instanceof Error ? `${error.message} ${(error as { details?: string }).details ?? ""}` : String(error);
+  return /rate limit/i.test(m);
+}
+
+export function isTransportError(error: unknown): boolean {
+  if (isRateLimited(error)) return false; // retrying a rate limit only spends more of the budget
+  const m = error instanceof Error ? `${error.message} ${(error as { details?: string }).details ?? ""}` : String(error);
+  return /failed to fetch|fetch failed|networkerror|unknown rpc error|unexpected token '<'|econnreset|timeout|timed out|502|503|504|load failed/i.test(m);
+}
+
 // ---------------------------------------------------------------- receipts
 type LeaderReceipt = {
   result?: { status?: string; payload?: unknown };
@@ -102,6 +114,8 @@ export interface TxResult {
 type Wait = "ACCEPTED" | "FINALIZED";
 
 // ------------------------------------------------------------------ client
+const inflight = new Map<string, { at: number; promise: Promise<unknown> }>();
+
 export class FalkClient {
   private readonly client: ReturnType<typeof createClient>;
   private onPhase?: (phase: TxPhase, hash?: string) => void;
@@ -117,14 +131,41 @@ export class FalkClient {
     this.client = createClient(config as never);
   }
 
+  /**
+   * Reads retry on transport failures: the StudioNet gateway occasionally
+   * answers with an HTML error page or drops a connection. A contract-level
+   * refusal is not retried.
+   */
   private async read<T>(functionName: string, args: unknown[] = []): Promise<T> {
-    const raw = await this.client.readContract({
-      address: CONTRACT_ADDRESS,
-      functionName,
-      args: args as never,
-      stateStatus: "accepted",
-    } as never);
-    return (typeof raw === "string" ? JSON.parse(raw) : raw) as T;
+    // The public RPC allows ~500 requests/hour/IP: identical reads issued at the
+    // same moment (strict-mode double effects, several components) share one request.
+    const key = `${functionName}:${JSON.stringify(args)}`;
+    const hit = inflight.get(key);
+    if (hit && Date.now() - hit.at < 1500) return hit.promise as Promise<T>;
+    const promise = this.readUncached<T>(functionName, args);
+    inflight.set(key, { at: Date.now(), promise });
+    promise.catch(() => inflight.delete(key));
+    return promise;
+  }
+
+  private async readUncached<T>(functionName: string, args: unknown[] = []): Promise<T> {
+    let last: unknown;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      try {
+        const raw = await this.client.readContract({
+          address: CONTRACT_ADDRESS,
+          functionName,
+          args: args as never,
+          stateStatus: "accepted",
+        } as never);
+        return (typeof raw === "string" ? JSON.parse(raw) : raw) as T;
+      } catch (error) {
+        last = error;
+        if (!isTransportError(error)) throw error;
+        await new Promise((r) => setTimeout(r, 700 * (attempt + 1)));
+      }
+    }
+    throw last;
   }
 
   getProtocolInfo() { return this.read<ProtocolInfo>("get_protocol_info"); }
@@ -166,8 +207,8 @@ export class FalkClient {
       receipt = await this.client.waitForTransactionReceipt({
         hash,
         status: wait as never,
-        retries: wait === "FINALIZED" ? 200 : 100,
-        interval: 3000,
+        retries: wait === "FINALIZED" ? 120 : 60,
+        interval: 5000,
       } as never);
     } catch (error) {
       throw new PendingReceipt(hash, error instanceof Error ? error.message : String(error));

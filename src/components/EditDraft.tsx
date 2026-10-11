@@ -5,15 +5,15 @@ import Link from "next/link";
 import { roleOf } from "@/lib/acts";
 import { useMandate } from "@/lib/useFalk";
 import { CreateMandateForm } from "./CreateMandateForm";
-import { Empty } from "./ui";
+import { Empty, ReadError } from "./ui";
 import { useWallet } from "./WalletProvider";
 
 export function EditDraft({ id }: { id: string }) {
-  const { bundle, loading, error, missing } = useMandate(id);
+  const { bundle, loading, error, missing, reload } = useMandate(id);
   const { address } = useWallet();
   if (loading) return <div className="notice wait">Reading {id}…</div>;
   if (missing) return <Empty>No mandate {id} exists on this contract.</Empty>;
-  if (error || !bundle) return <div className="notice stop">{error}</div>;
+  if (error || !bundle) return <ReadError label="Could not read the mandate." message={error ?? ""} onRetry={() => void reload()} />;
   const { mandate, criteria } = bundle;
   if (mandate.status !== "DRAFT") {
     return (

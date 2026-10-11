@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { Act, computeActs, roleOf, whyNot } from "@/lib/acts";
 import { addressUrl, txUrl } from "@/lib/config";
 import type { FalkClient } from "@/lib/falk";
-import { parseGen } from "@/lib/pure";
+import { commitmentOf } from "@/lib/pure";
 import {
   ACT_LABEL, ACTION_LABEL, RETRIEVAL_LABEL, RULING_LABEL, RULING_MEANING, STATE_NEXT,
   VERDICT_TONE, countdown, formatDuration, formatGen, formatTime, shortHash,
@@ -15,7 +15,7 @@ import type { MandateStatus, Ruling } from "@/lib/protocol";
 import { TERMINAL_STATES } from "@/lib/protocol";
 import { useMandate, useNow, useTx } from "@/lib/useFalk";
 import { EvidenceForm } from "./EvidenceForm";
-import { Addr, Empty, Gen, Section, StateBadge, Tag, TxStatus } from "./ui";
+import { Addr, Empty, Gen, ReadError, Section, StateBadge, Tag, TxStatus } from "./ui";
 import { useWallet } from "./WalletProvider";
 
 const PATH: { status: MandateStatus[]; label: string }[] = [
@@ -42,7 +42,7 @@ export function MandateWorkspace({ id }: { id: string }) {
       </div>
     );
   }
-  if (error || !bundle) return <div className="wrap section"><div className="notice stop">Could not read the mandate: {error}</div></div>;
+  if (error || !bundle) return <div className="wrap section"><ReadError label="Could not read the mandate." message={error ?? ""} onRetry={() => void reload()} /></div>;
 
   return (
     <Workspace bundle={bundle} address={address} onChain={onChain} now={now} tx={tx} run={run} busy={busy} canSign={canSign} reload={reload} />
@@ -73,6 +73,18 @@ function Workspace({ bundle, address, onChain, now, tx, run, busy, canSign, relo
   const [response, setResponse] = useState("");
   const [deliverUrl, setDeliverUrl] = useState("");
   const [deliverHash, setDeliverHash] = useState("");
+  const [deliverNote, setDeliverNote] = useState<string | null>(null);
+  async function hashDeliverable() {
+    setDeliverNote("Fetching…");
+    try {
+      const r = await fetch(deliverUrl.trim());
+      if (!r.ok) throw new Error(`the server answered ${r.status}`);
+      setDeliverHash(await commitmentOf(await r.text()));
+      setDeliverNote("Hashed the live document.");
+    } catch (e) {
+      setDeliverNote(`Could not read it from the browser (${e instanceof Error ? e.message : e}). Compute the sha256 of the stripped body yourself and paste it.`);
+    }
+  }
 
   const pathIndex = PATH.findIndex((p) => p.status.includes(m.status));
   const closed = TERMINAL_STATES.includes(m.status);
@@ -154,6 +166,7 @@ function Workspace({ bundle, address, onChain, now, tx, run, busy, canSign, relo
               <h3>Mark delivered</h3>
               <label className="field"><span>Deliverable URL</span><input value={deliverUrl} onChange={(e) => setDeliverUrl(e.target.value)} placeholder="https://…" spellCheck={false} /></label>
               <label className="field"><span>Deliverable sha256</span><input className="mono" value={deliverHash} onChange={(e) => setDeliverHash(e.target.value)} spellCheck={false} /></label>
+              <div className="row"><button type="button" className="btn ghost sm" disabled={!deliverUrl.trim()} onClick={hashDeliverable}>Fetch URL and compute</button>{deliverNote ? <span className="muted small">{deliverNote}</span> : null}</div>
               <button className="btn accent" disabled={disabledAll || !deliverUrl.trim() || !/^[0-9a-fA-F]{64}$/.test(deliverHash.trim())}
                 onClick={() => go("Mark delivered", (c) => c.submitDeliverable(m.mandate_id, deliverUrl.trim(), deliverHash.trim().toLowerCase()))}>Deliver</button>
               <p className="muted small">Filing a deliverable starts the client&apos;s review window ({formatDuration(m.review_window_ms)}).</p>

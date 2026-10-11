@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { describeRefusal } from "@/lib/present";
 import type { MandateRow, ProtocolInfo } from "@/lib/protocol";
 import { useReader } from "@/lib/useFalk";
-import { Empty, Gen, StateBadge } from "./ui";
+import { Empty, Gen, ReadError, StateBadge } from "./ui";
 
 export function HomeLive() {
   const reader = useReader();
@@ -33,7 +33,7 @@ export function HomeLive() {
     };
   }, [reader]);
 
-  if (error) return <div className="notice stop">Could not read StudioNet: {error}</div>;
+  if (error) return <ReadError label="Could not read StudioNet." message={error} />;
   if (!info || !rows) return <div className="notice wait">Reading the contract…</div>;
 
   return (
