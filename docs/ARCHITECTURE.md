@@ -70,9 +70,11 @@ where the evidence cannot support it, and the contract derives everything else.
 
 ### 2.1 Equivalence design
 
-* Leader and validators run the **same** `gather()` closure. It is defined once
-  per call and invoked from both `leader_fn` and `validator_fn`, so the two paths
-  are identical by construction rather than by copy.
+* Leader and validators run the **same code**. GenVM's linter requires every
+  `gl.nondet.*` call to sit inside the function passed to `run_nondet_unsafe`, so
+  the retrieval-and-extraction body lives in `leader_fn` and `validator_fn` simply
+  calls `leader_fn()` again. Identical by construction, with no second copy to
+  drift.
 * The consensus **fingerprint** is `sha256(canonical_json({mandate_id, results:
   [[cid, result], …] in checklist order, inconclusive_ids, ruling}))`. Reasoning
   text, quality labels, integrity flags and per-source retrieval labels are
@@ -141,7 +143,7 @@ method that accepts a timestamp, advances time, waits, or counts calls as time.
 | `classify_fetch(status, body, commitment)` | closed taxonomy (§ PROTOCOL 7) |
 | `normalize_panel(raw, mandate_id, checklist)` | fixed key set; unknown fields dropped |
 | `clamp_results(results, checklist, supports)` | PASS→INCONCLUSIVE where evidence is short |
-| `fingerprint(norm)` | consequence-only |
+| `fingerprint(mandate_id, results, checklist)` | consequence-only |
 | `derive_ruling(checklist, results)` | `(score, ruling, critical_failed, passed, failed, inconclusive)` |
 | `choose_action(policy, ruling)` | policy lookup, closed vocabulary |
 | `split_custody(action, …)` | integer payout math, conservation asserted |

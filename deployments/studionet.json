@@ -1,0 +1,32 @@
+{
+  "network": "studionet",
+  "chainId": 61999,
+  "chainIdHex": "0xf22f",
+  "chainName": "GenLayer StudioNet",
+  "rpcUrl": "https://studio.genlayer.com/api",
+  "explorerUrl": "https://explorer-studio.genlayer.com",
+  "nativeCurrency": {
+    "name": "GEN",
+    "symbol": "GEN",
+    "decimals": 18
+  },
+  "contract": {
+    "name": "Falk",
+    "version": "FALK-1.0.0",
+    "status": "deployed-and-byte-verified",
+    "address": "0x35726f0f09FC0b84b679d2Ec26FB38Ea851BB8a8",
+    "explorerUrl": "https://explorer-studio.genlayer.com/address/0x35726f0f09FC0b84b679d2Ec26FB38Ea851BB8a8",
+    "deployTransaction": "0x845adfc635b35c7aa9730465befc4caec21a2bd08c8a389b7117d2cb79515ad7",
+    "deployer": "0x4184bc5e5444f250767e8d33a49817a9b4fb0df3",
+    "source": "contracts/falk.py",
+    "sourceSha256": "6f2f696c80ef42951f76ea6230d62071700a72b7319cd9814863c6af5287c65e",
+    "sourceLines": 1901,
+    "sourceBytes": 81659,
+    "runner": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6",
+    "publicMethods": 31,
+    "readMethods": 11,
+    "writeMethods": 20,
+    "verifiedAt": "2026-10-11",
+    "verification": "gen_getContractCode returned the deployed source; after BOM, CRLF, result-banner and blank-edge normalisation its sha256 equals that of contracts/falk.py. gen_getContractSchema reported the recorded method counts and get_protocol_info returned the recorded revision."
+  }
+}

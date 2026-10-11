@@ -35,7 +35,7 @@ No owner, no admin, no pause.
     "LAPSE_BOND":   "RETURN | FORFEIT"
   },
   "windows_ms": { "execution": …, "review": …, "response": …, "appeal": …, "manual": … },
-  "evidence_rules": { "max_receipts": 1‥24, "schemes": ["https"], "text": "…" }
+  "evidence_rules": { "max_receipts": 1‥24 /* per party; the deliverable does not count */, "schemes": ["https"], "text": "…" }
 }
 ```
 
@@ -77,10 +77,10 @@ RECORD_SEALED / APPEALED ──recover_escrow (panel stalled past grace)──�
 | `create_mandate` | anyone (→ client) | — | validations; operator ≠ client |
 | `update_draft` | client | DRAFT | — |
 | `fund_mandate` | client | DRAFT | value == payment_wei |
-| `accept_mandate` | operator | ESCROWED | value == bond; ≤ funded+accept window |
+| `accept_mandate` | operator | ESCROWED | value == bond (the execution clock starts here) |
 | `cancel_mandate` | client | DRAFT, ESCROWED | — (payment returned) |
 | `submit_evidence` | operator / client | see §5 | commitment mandatory; caps; independence |
-| `submit_deliverable` | operator | ENGAGED | now ≤ execution deadline; ≥1 receipt |
+| `submit_deliverable` | operator | ENGAGED | now ≤ execution deadline; commitment mandatory |
 | `approve_work` | client | DELIVERED | — |
 | `claim_unreviewed_delivery` | operator | DELIVERED | now > review deadline |
 | `open_contest` | client | DELIVERED | now ≤ review deadline; value == contest bond |
@@ -120,7 +120,8 @@ A **receipt** = `{id, criterion_ids, url, role, origin_class, content_commitment
 * `origin_class`: `OPERATOR_HOSTED | CLIENT_HOSTED | THIRD_PARTY | PUBLIC_RECORD`.
 * Who/when: operator in ENGAGED, DELIVERED, CONTESTED(before seal); client only in CONTESTED (before seal) and only role `COUNTER`/`SUPPORT`. Nothing after `seal_record`.
 * **Independence rules** (enforced at filing): a receipt claiming `THIRD_PARTY` or `PUBLIC_RECORD` is refused if its host equals the host of the mandate's deliverable URL, or of any receipt the same submitter filed as `*_HOSTED`. A criterion with `independence: THIRD_PARTY` counts **distinct hosts among independent receipts** toward `min_evidence`, so ten pages on one site are one origin.
-* URL rules: allowed schemes only (default https), no userinfo, no loopback/private/link-local literals, ≤ 512 chars. Duplicate URLs per mandate refused.
+* URL rules: allowed schemes only (default https), no userinfo, no IP literals, no loopback/private suffixes (`.local`, `.internal`, …), ≤ 512 chars. Duplicate URLs per mandate refused.
+* Caps: `max_receipts` is **per party** (operator and client each get the allowance; the deliverable receipt is not counted), so neither side can crowd the other out of the record.
 * `seal_record` freezes: `evidence_count`, `snapshot_hash = sha256(canon([[id, criterion_ids, url, commitment, origin_class], …]))`. `adjudicate` recomputes and compares before any retrieval.
 
 ## 6. Adjudication

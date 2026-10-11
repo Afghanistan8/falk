@@ -9,10 +9,11 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:web": "node --test scripts/web.test.mjs",
+    "test:web": "node --test scripts/web.test.mjs scripts/safety.test.mjs",
     "verify:live": "node scripts/check_live_deployment.mjs",
     "verify:safety": "node scripts/verify_safety.mjs",
     "arc": "node scripts/arc.mjs",
+    "verify:arc": "node scripts/verify_arc.mjs",
     "vercel-build": "next build"
   },
   "dependencies": {

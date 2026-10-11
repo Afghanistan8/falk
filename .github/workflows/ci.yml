@@ -1,0 +1,75 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:web
+      - run: npm run build
+
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: GenVM bundle
+        run: python scripts/fetch_genvm_bundle.py
+      - name: Lint the contract
+        run: genvm-lint check contracts/falk.py
+        env:
+          PYTHONUTF8: "1"
+      - name: Pure core (no VM)
+        run: python -m pytest tests/pure -q -p no:cacheprovider
+      - name: Direct GenVM suite
+        run: python -m pytest tests/direct -q -p no:cacheprovider
+        env:
+          PYTHONUTF8: "1"
+      - name: Shared act vectors are current
+        run: python tests/gen_vectors.py --check
+
+  mutation:
+    runs-on: ubuntu-latest
+    needs: contract
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/fetch_genvm_bundle.py
+      - name: Mutation sweep (every mutant must be killed)
+        run: python tests/mutation_sweep.py -j 4
+        env:
+          PYTHONUTF8: "1"
+
+  live:
+    # Keyless: reads StudioNet only. Never uses a key.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run verify:live
+      - run: npm run verify:safety
+      - run: npm run verify:arc

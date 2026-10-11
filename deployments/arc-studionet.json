@@ -1,0 +1,867 @@
+{
+  "network": "GenLayer StudioNet",
+  "chainId": 61999,
+  "contract": "0x35726f0f09FC0b84b679d2Ec26FB38Ea851BB8a8",
+  "revision": "FALK-1.0.0",
+  "ranAt": "2026-10-11T15:36:43.144Z",
+  "seconds": 569,
+  "checks": {
+    "total": 53,
+    "passed": 53,
+    "failed": 0
+  },
+  "scenarios": [
+    {
+      "code": "A",
+      "title": "Approve path",
+      "path": "create → fund → accept → evidence → deliver → approve → settle",
+      "status": "complete",
+      "error": null,
+      "mandate": "FLK-000020",
+      "outcome": "RELEASE_FULL · operator 2.5 GEN",
+      "actors": {
+        "client": "0xf9562c2b8fC55E24022aDCf5F6F982f7ce66e50e",
+        "operator": "0x8E32CF6102682612C63a11d46A0ad98ab25bBae8",
+        "keeper": "0x6F8062C7DBd3f62cCE4F29d65E435170086EE9B6"
+      },
+      "steps": [
+        {
+          "fn": "create_mandate",
+          "by": "client",
+          "hash": "0xb39f1b7a4ab66785f9e9da1a5c4808a7503ff9a0c5e52a47eb5caf46f638308b",
+          "wait": "ACCEPTED",
+          "seconds": 10.4,
+          "note": ""
+        },
+        {
+          "fn": "fund_mandate",
+          "by": "client",
+          "hash": "0x1643ba0a4118b5e0684430f7b931867ca245586b1b2653734aaea7bf3c5c212c",
+          "wait": "ACCEPTED",
+          "seconds": 15.1,
+          "note": ""
+        },
+        {
+          "fn": "accept_mandate",
+          "by": "operator",
+          "hash": "0xd366656eee9306b08b534d9b31992e878dc914bad944ee5a5fba50f37a1f394c",
+          "wait": "ACCEPTED",
+          "seconds": 31.1,
+          "note": ""
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x4438fdc3e28c304281e2c479cac9258d9045eddc138200ea8375788905a4c59d",
+          "wait": "ACCEPTED",
+          "seconds": 28,
+          "note": "C1 ← northwind-report.md"
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x68c92215b0899b956373915179c16956ab769c242a6e77c25860ca917d23fc77",
+          "wait": "ACCEPTED",
+          "seconds": 21.6,
+          "note": "C2 ← figures-sourced.md"
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x01252ade1d66e861d1ddcbeb83eda8d4a16f2e96230544a5b87ea36c69c82550",
+          "wait": "ACCEPTED",
+          "seconds": 21.4,
+          "note": "C3 ← exec-summary.md"
+        },
+        {
+          "fn": "submit_deliverable",
+          "by": "operator",
+          "hash": "0x403bbaf42a02069a6fd3b0666cf0e12d44d1946bcecce073d258e7d99a1fb3d4",
+          "wait": "ACCEPTED",
+          "seconds": 54.2,
+          "note": ""
+        },
+        {
+          "fn": "approve_work",
+          "by": "client",
+          "hash": "0x514674f586aff099447bf1578eb79c09aa8337e39644bfa8a9a60d6ed939c293",
+          "wait": "ACCEPTED",
+          "seconds": 11.7,
+          "note": ""
+        },
+        {
+          "fn": "settle",
+          "by": "keeper",
+          "hash": "0xb6020f659442aa8f65aa1dc2885e91e10f41dce533e30e922ffa888e3c0a203f",
+          "wait": "FINALIZED",
+          "seconds": 41,
+          "note": ""
+        }
+      ],
+      "walls": [
+        {
+          "label": "update_draft after funding",
+          "fn": "update_draft",
+          "hash": "0x0b8d9b14442f801413c1d64dac737ad5ee7d3574e1aa5d23429ccaac2f1d2511",
+          "refusal": "only the client of this mandate may do that",
+          "ok": true
+        },
+        {
+          "label": "accept_mandate by a stranger",
+          "fn": "accept_mandate",
+          "hash": "0xf3157b3ec401cc7fc818c7160cc063e037badf45a5f76d87ed19be4dfc921658",
+          "refusal": "only the operator of this mandate may do that",
+          "ok": true
+        },
+        {
+          "label": "accept_mandate with a short bond",
+          "fn": "accept_mandate",
+          "hash": "0xb6af70b9b8e023bd4559010a4163f545b97a93067551c22bee56e0728263ac15",
+          "refusal": "exact performance bond required: expected 500000000000000000 wei, received 499999999999999999",
+          "ok": true
+        },
+        {
+          "label": "evidence without a content commitment",
+          "fn": "submit_evidence",
+          "hash": "0xcfbd77844c77fdf270fa48f2ddf1e6e4bed62dcf818c7c399a7adcf248007078",
+          "refusal": "a content commitment is required: the 64-character sha256 of the document body (hex, optionally prefixed sha256:)",
+          "ok": true
+        },
+        {
+          "label": "recover_escrow while engaged",
+          "fn": "recover_escrow",
+          "hash": "0x1577bf7e7843d7a69c79cf7d3835db7c3845ef7b3a933cb880349c2c8661658f",
+          "refusal": "this mandate is ENGAGED; this action needs LAPSED or FINALIZED or RECORD_SEALED",
+          "ok": true
+        },
+        {
+          "label": "approve_work by the operator",
+          "fn": "approve_work",
+          "hash": "0x65218e5a53a2cdbef37d9b4b1ba6d70452f25caea6d1c86f6815da11d8e5252f",
+          "refusal": "only the client of this mandate may do that",
+          "ok": true
+        },
+        {
+          "label": "settle twice",
+          "fn": "settle",
+          "hash": "0x5cb90229384916244d8e6d80c42317325690a24122474fcc3dbb2b11fcf026f2",
+          "refusal": "this mandate is SETTLED; this action needs APPROVED or FINALIZED",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "code": "B",
+      "title": "Contested → pro-rata",
+      "path": "contest → seal → live panel → finalize → settle (prorata)",
+      "status": "complete",
+      "error": null,
+      "mandate": "FLK-000021",
+      "outcome": "PARTIAL 65/100 → PRORATA · operator 1.8 GEN",
+      "actors": {
+        "client": "0x4126295ed3a22acC69C984f2CD4746A8985f32E6",
+        "operator": "0x28Ce0eb325b9C01AD9554D2D161F84f79e4f9152",
+        "keeper": "0x4EF8FCD95fEdAe7B54c1Fb14634e825456679932"
+      },
+      "steps": [
+        {
+          "fn": "create_mandate",
+          "by": "client",
+          "hash": "0xfbd7edb419101a18b19bee18c1aa49c998ad938e47d31d7be41d98c3a0f10e6e",
+          "wait": "ACCEPTED",
+          "seconds": 14.2,
+          "note": ""
+        },
+        {
+          "fn": "fund_mandate",
+          "by": "client",
+          "hash": "0x28abab8526493750b67ef2508dd08bfd93acc7db0b3d6bf1897165c82525549c",
+          "wait": "ACCEPTED",
+          "seconds": 11.6,
+          "note": ""
+        },
+        {
+          "fn": "accept_mandate",
+          "by": "operator",
+          "hash": "0x6032b525e1c89998ad4d8a20fa1a0cbd59e7f41a04359ce3130c728e077b000c",
+          "wait": "ACCEPTED",
+          "seconds": 24.6,
+          "note": ""
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x7d227a0de28af4bb328616c274dae0f9c9b3c8cdb31c2d530a7fd68a54c87675",
+          "wait": "ACCEPTED",
+          "seconds": 34.2,
+          "note": "C1 ← northwind-report.md"
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0xa7dfb98dec3b4191c8feb3cb03444872a0f73a2741096ec1a85f6bfb4f7b7635",
+          "wait": "ACCEPTED",
+          "seconds": 38,
+          "note": "C2 ← figures-unsourced.md"
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x9a8125d7933b7d08b4ee2596833d2cc8234a0eaecbe4f2914e2c0ba8bdc32e51",
+          "wait": "ACCEPTED",
+          "seconds": 27.8,
+          "note": "C3 ← exec-summary.md"
+        },
+        {
+          "fn": "submit_deliverable",
+          "by": "operator",
+          "hash": "0x2a268569e366a103d36f741704cd7e6b7ac19b62d33723a73abd7a4f110a2d43",
+          "wait": "ACCEPTED",
+          "seconds": 27.7,
+          "note": ""
+        },
+        {
+          "fn": "open_contest",
+          "by": "client",
+          "hash": "0xc46ab511ac57c61d1ba243b914c1c9874958e2d04f2a81d73ea0948f1ea37b3a",
+          "wait": "ACCEPTED",
+          "seconds": 28,
+          "note": ""
+        },
+        {
+          "fn": "respond_to_contest",
+          "by": "operator",
+          "hash": "0x30a90afcca2bf2f9f1cd93f5ae2e0c71ec5d64f3f7d2f738189cf97af32943e4",
+          "wait": "ACCEPTED",
+          "seconds": 27.9,
+          "note": ""
+        },
+        {
+          "fn": "seal_record",
+          "by": "operator",
+          "hash": "0x7e81996c760fb9ea3cd4151690af2efa655c7e024d4e65153a9c8c69e97199ba",
+          "wait": "ACCEPTED",
+          "seconds": 25.1,
+          "note": ""
+        },
+        {
+          "fn": "adjudicate",
+          "by": "keeper",
+          "hash": "0x076e586bd949006f69707bd32bd24258e4979d820fe45fed93d819034a5bea72",
+          "wait": "ACCEPTED",
+          "seconds": 40.7,
+          "note": ""
+        },
+        {
+          "fn": "finalize_ruling",
+          "by": "keeper",
+          "hash": "0x0aec84f0aa649e14953f146b6102788f880a6167a5855284f16791bc1c28e8cb",
+          "wait": "ACCEPTED",
+          "seconds": 18.7,
+          "note": ""
+        },
+        {
+          "fn": "settle",
+          "by": "keeper",
+          "hash": "0xaba0f617270ba5bea3f589dd2e7ed3421b1704c32cd78ba0d3b31d9f2a9f66e5",
+          "wait": "FINALIZED",
+          "seconds": 41.4,
+          "note": ""
+        }
+      ],
+      "walls": [
+        {
+          "label": "settle before finalize",
+          "fn": "settle",
+          "hash": "0x61d82bd33d3bd317958edb01e01f9ff0f6056786e44871b55f4b68c3feb7a72e",
+          "refusal": "this mandate is RULING; this action needs APPROVED or FINALIZED",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "code": "C",
+      "title": "Content mismatch → recovery",
+      "path": "content mismatch → no PASS → manual review → recovery",
+      "status": "complete",
+      "error": null,
+      "mandate": "FLK-000022",
+      "outcome": "INCONCLUSIVE → recovered · client 2.2 / operator 0.5 GEN",
+      "actors": {
+        "client": "0xd108A7AA2E2dbb5f4D20ab24bbC3859E4Ba5683f",
+        "operator": "0xE3D305B6C6d338366CB8E42AE4De76593BFc34FD",
+        "keeper": "0xAE85f8097A6FEf2C6CaD912d17ab83493Ee456AC"
+      },
+      "steps": [
+        {
+          "fn": "create_mandate",
+          "by": "client",
+          "hash": "0xf20b4361df140169f8db402684104a90742f69f9d5266c821e8c1bf7d820fe9a",
+          "wait": "ACCEPTED",
+          "seconds": 15.5,
+          "note": ""
+        },
+        {
+          "fn": "fund_mandate",
+          "by": "client",
+          "hash": "0x184b71b06cf37af71cf922f75cb399a1f2b16636be58d0409936f05f15ac1ae0",
+          "wait": "ACCEPTED",
+          "seconds": 23,
+          "note": ""
+        },
+        {
+          "fn": "accept_mandate",
+          "by": "operator",
+          "hash": "0xd1b494c59fa05af002c7565dcde56580d167d28de61f5fe29b914c61b26f863c",
+          "wait": "ACCEPTED",
+          "seconds": 34,
+          "note": ""
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x535a2d887ec5359d493d1ddae49b0104dd27caca64673a407ec3dec6b57d6877",
+          "wait": "ACCEPTED",
+          "seconds": 37.5,
+          "note": "C1 ← northwind-report.md"
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x912fd890be39da14c8e56dc80de78479b67892028102df9d2ee61d6fcee72775",
+          "wait": "ACCEPTED",
+          "seconds": 31.9,
+          "note": "C2 ← figures-sourced.md"
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x59b82a871043bcc246c0173f71fa0032ca3e78d3342f02a0379d33cc8aa5ee3e",
+          "wait": "ACCEPTED",
+          "seconds": 24.3,
+          "note": "C3 ← exec-summary.md"
+        },
+        {
+          "fn": "submit_deliverable",
+          "by": "operator",
+          "hash": "0x932eab82d5fd4c8020913a8f32a126dbdac6794e268663f8a613310827472b1b",
+          "wait": "ACCEPTED",
+          "seconds": 30.8,
+          "note": ""
+        },
+        {
+          "fn": "open_contest",
+          "by": "client",
+          "hash": "0x9533ccb3093173d7716e121115c1f6d9788aded4b9b7fed16e5c3ded905f68eb",
+          "wait": "ACCEPTED",
+          "seconds": 27.6,
+          "note": ""
+        },
+        {
+          "fn": "respond_to_contest",
+          "by": "operator",
+          "hash": "0x6a611cca4ed08ed1a78d86ee5061757bbdb1a27e270c4a9dd54aba809e81b94c",
+          "wait": "ACCEPTED",
+          "seconds": 24.6,
+          "note": ""
+        },
+        {
+          "fn": "seal_record",
+          "by": "operator",
+          "hash": "0xa1ccd00e396348b43cf040b4a68c4284af27acf0013c146fc38e8a2e26502286",
+          "wait": "ACCEPTED",
+          "seconds": 17.9,
+          "note": ""
+        },
+        {
+          "fn": "adjudicate",
+          "by": "keeper",
+          "hash": "0x93ab428962cdebfad8bddcde34d570f3ecabe284ea5f49f23c27785536b4fd65",
+          "wait": "ACCEPTED",
+          "seconds": 57.1,
+          "note": ""
+        },
+        {
+          "fn": "finalize_ruling",
+          "by": "keeper",
+          "hash": "0xa285488e6ef21b20392ba1cb828111e87184121fb9c573e0661d3a12ac0c245e",
+          "wait": "ACCEPTED",
+          "seconds": 21.6,
+          "note": ""
+        },
+        {
+          "fn": "recover_escrow",
+          "by": "keeper",
+          "hash": "0xe75e654ccfbc4d870358e778da7890d9e94a92416ef2fcb2c400e36ffd351550",
+          "wait": "FINALIZED",
+          "seconds": 41.2,
+          "note": ""
+        }
+      ],
+      "walls": [
+        {
+          "label": "recover_escrow inside the manual window",
+          "fn": "recover_escrow",
+          "hash": "0xaf4bd0c959957bc6169e3436ad0b717377156a5820ad783b85c0f5c56eeb9cd8",
+          "refusal": "the manual-review window is still open",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "code": "D",
+      "title": "Cancel before engagement",
+      "path": "fund → cancel",
+      "status": "complete",
+      "error": null,
+      "mandate": "FLK-000023",
+      "outcome": "CANCELLED · payment returned",
+      "actors": {
+        "client": "0xbF3bB7A62857791652710051C1f9f63820AA6542",
+        "operator": "0xc8EECbAee56324cc1fca2c01a86CF422Bee127A2",
+        "keeper": "0x5CDE8a6a21ADaa855c1c0D1c9dB17DF51B7F67F6"
+      },
+      "steps": [
+        {
+          "fn": "create_mandate",
+          "by": "client",
+          "hash": "0xb2189822f410fce4c4d593158163b74073bea3f595b5b1271f29757c74f1bf31",
+          "wait": "ACCEPTED",
+          "seconds": 11.8,
+          "note": ""
+        },
+        {
+          "fn": "fund_mandate",
+          "by": "client",
+          "hash": "0xcf2869dd86943c996e626a0ef4b248197ef4fbf57553256432ddaf43271e856e",
+          "wait": "ACCEPTED",
+          "seconds": 21.3,
+          "note": ""
+        },
+        {
+          "fn": "cancel_mandate",
+          "by": "client",
+          "hash": "0xd0e6954e43f2c1b5d3d4802a9f573404d9f6f809bb9d5eeca23c5009c9a46bfc",
+          "wait": "FINALIZED",
+          "seconds": 67,
+          "note": ""
+        }
+      ],
+      "walls": [
+        {
+          "label": "cancel_mandate by the operator",
+          "fn": "cancel_mandate",
+          "hash": "0x1448d11510b5801f8f7e5581e89638c071b542beb914565948ad5001ee9736cd",
+          "refusal": "only the client of this mandate may do that",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "code": "E",
+      "title": "Lapse → recovery",
+      "path": "accept → miss execution deadline → lapse → recover",
+      "status": "complete",
+      "error": null,
+      "mandate": "FLK-000024",
+      "outcome": "LAPSED → recovered · bond returned",
+      "actors": {
+        "client": "0x84737177Fc13751619C0cC6Bd5A34D6C4f19858c",
+        "operator": "0x6B56F5f069B06D8865C26Bf315F1acD72cA380D5",
+        "keeper": "0x493fd461eE696e755B2fB0E38B50415E54B53178"
+      },
+      "steps": [
+        {
+          "fn": "create_mandate",
+          "by": "client",
+          "hash": "0x840dd4e8458f26f18f409ea715796c8b9ff27bb413ccf06120e01b7d62de0746",
+          "wait": "ACCEPTED",
+          "seconds": 18.7,
+          "note": ""
+        },
+        {
+          "fn": "fund_mandate",
+          "by": "client",
+          "hash": "0x0ad65fd97680774d412cb1dca623f08cd41f78767358d5ffbbab59ed6209be72",
+          "wait": "ACCEPTED",
+          "seconds": 25.7,
+          "note": ""
+        },
+        {
+          "fn": "accept_mandate",
+          "by": "operator",
+          "hash": "0xbf5d5eeceeb4c5440a1924d039bca0d00567ca6167195dd781ce7f6dfc5c22d2",
+          "wait": "ACCEPTED",
+          "seconds": 34.2,
+          "note": ""
+        },
+        {
+          "fn": "lapse_mandate",
+          "by": "keeper",
+          "hash": "0x316b03ef26012ff1e30a32aaf8f7d8d22d9d9ed4b33c55826482429c70fb5f3f",
+          "wait": "ACCEPTED",
+          "seconds": 31.5,
+          "note": ""
+        },
+        {
+          "fn": "recover_escrow",
+          "by": "keeper",
+          "hash": "0x300f30247c12f402b15899b2bcba70d3aba83cf22b41b7d38c6190e32eccae1b",
+          "wait": "FINALIZED",
+          "seconds": 54.2,
+          "note": ""
+        }
+      ],
+      "walls": [
+        {
+          "label": "lapse before the deadline",
+          "fn": "lapse_mandate",
+          "hash": "0x96f089ace2c49054070388199f0e57062537887c688aa4892a36c142af4d3b03",
+          "refusal": "the execution deadline has not passed",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "code": "F",
+      "title": "Appeal",
+      "path": "ruling → appeal → second round → finalize → settle",
+      "status": "complete",
+      "error": null,
+      "mandate": "FLK-000025",
+      "outcome": "appealed: PARTIAL/65 → PARTIAL/65 → PRORATA",
+      "actors": {
+        "client": "0xd61ABe9c1675DB5dD3cC002CC041C8F4A0A5Da0a",
+        "operator": "0x4E3aF4FAE17DEFC972A74E3e7a517a916017E0dE",
+        "keeper": "0xeE66284B0d697B1feD1F6DbeeC847918d35bdAd9"
+      },
+      "steps": [
+        {
+          "fn": "create_mandate",
+          "by": "client",
+          "hash": "0xea6565f85265afeed8f924257f353ef0cf247a9ae6042b13023da0ff6f67e368",
+          "wait": "ACCEPTED",
+          "seconds": 14.9,
+          "note": ""
+        },
+        {
+          "fn": "fund_mandate",
+          "by": "client",
+          "hash": "0xc803090d7a0aa822d21f382fcf801d096be1be7a7f70e7a04b94fbd99277c9a1",
+          "wait": "ACCEPTED",
+          "seconds": 30.9,
+          "note": ""
+        },
+        {
+          "fn": "accept_mandate",
+          "by": "operator",
+          "hash": "0xbb70bceb038bb83c6e69a6d966f7a13f9015738aa09c2170ae36acbf1349121e",
+          "wait": "ACCEPTED",
+          "seconds": 34.1,
+          "note": ""
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0xad25d5111bd4451bf25f474e697e72e8f4a9f5f068955a9e6eb028537befa0d1",
+          "wait": "ACCEPTED",
+          "seconds": 34.8,
+          "note": "C1 ← northwind-report.md"
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x6c248402d70376179529244898c7346e78e3f41876a0b8b4cc565d741989ec1d",
+          "wait": "ACCEPTED",
+          "seconds": 31.4,
+          "note": "C2 ← figures-unsourced.md"
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x76834a0e20a2bd681d39926d58af19bdbc98f24a284192dfcd7b7ac55a9e62c5",
+          "wait": "ACCEPTED",
+          "seconds": 27.6,
+          "note": "C3 ← exec-summary.md"
+        },
+        {
+          "fn": "submit_deliverable",
+          "by": "operator",
+          "hash": "0x81fd568c741f247fcd5bac9c5996fe5dd442cbb203e35b9f09cd1bae0ff81332",
+          "wait": "ACCEPTED",
+          "seconds": 27.6,
+          "note": ""
+        },
+        {
+          "fn": "open_contest",
+          "by": "client",
+          "hash": "0x33c5b69c91132cc7487b762dcfc5f1c8aa810b1b75b108b7ff494cd2ff08091f",
+          "wait": "ACCEPTED",
+          "seconds": 24.5,
+          "note": ""
+        },
+        {
+          "fn": "respond_to_contest",
+          "by": "operator",
+          "hash": "0xa7ecf266ccdb7c13a7a0d518b08a24da992173d5bde428a744a982543747cb03",
+          "wait": "ACCEPTED",
+          "seconds": 24.5,
+          "note": ""
+        },
+        {
+          "fn": "seal_record",
+          "by": "operator",
+          "hash": "0xe7d779a1c2acb177555b4e52a282da9a104f45bca9f013845b5eeff158581b08",
+          "wait": "ACCEPTED",
+          "seconds": 44,
+          "note": ""
+        },
+        {
+          "fn": "adjudicate",
+          "by": "keeper",
+          "hash": "0x76bdc69576aa8136864465fbbb6aef7ea61ab68a58eb3e443c64aa4c856804eb",
+          "wait": "ACCEPTED",
+          "seconds": 47.5,
+          "note": ""
+        },
+        {
+          "fn": "appeal",
+          "by": "client",
+          "hash": "0x4ce91ed160fd0a9101f843fc3e63311cbf48bd8dc1d2f6d11871946e6ff1cd45",
+          "wait": "ACCEPTED",
+          "seconds": 8.1,
+          "note": ""
+        },
+        {
+          "fn": "adjudicate",
+          "by": "keeper",
+          "hash": "0x589bdbaa2eb2b1ef480068d4831f49307b4a9520b6d6d2161eb7d55eaaec8464",
+          "wait": "ACCEPTED",
+          "seconds": 24.7,
+          "note": ""
+        },
+        {
+          "fn": "finalize_ruling",
+          "by": "keeper",
+          "hash": "0x584df3d4926b02f5c18c2b682207e6fdc05d22a68740d50342d8ca0712c76cc1",
+          "wait": "ACCEPTED",
+          "seconds": 14.6,
+          "note": ""
+        },
+        {
+          "fn": "settle",
+          "by": "keeper",
+          "hash": "0x379db436182ce581725f1db8a03052c08ef6080b77c5aa43b26006cf6df291a5",
+          "wait": "FINALIZED",
+          "seconds": 44.8,
+          "note": ""
+        }
+      ],
+      "walls": [
+        {
+          "label": "recover_escrow during an appeal",
+          "fn": "recover_escrow",
+          "hash": "0x4690e7f48b95129da804ea05699801f59fddeee9b40d40c06a59e4eb5fc44f6d",
+          "refusal": "this mandate is APPEALED; this action needs LAPSED or FINALIZED or RECORD_SEALED",
+          "ok": true
+        },
+        {
+          "label": "second appeal",
+          "fn": "appeal",
+          "hash": "0x9b2637d5d6a9a9d76f7515f1baf1a3dcecdf54ab0b0e0849ee81945259b3afca",
+          "refusal": "this mandate is APPEALED; this action needs RULING",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "title": "Unreviewed delivery",
+      "path": "silent client → claim_unreviewed_delivery → settle",
+      "status": "complete",
+      "error": null,
+      "mandate": "FLK-000026",
+      "outcome": "RELEASE_FULL (unreviewed) · operator 2.5 GEN",
+      "actors": {
+        "client": "0x6b43aAF8D5C272BF7E724a029F1C702cA860AF22",
+        "operator": "0x97d1081F115C52f0EFC06558F45311554f31c578",
+        "keeper": "0x2e8964C4d2fE2060FE9eA2EC98dB943842f14318"
+      },
+      "steps": [
+        {
+          "fn": "create_mandate",
+          "by": "client",
+          "hash": "0x477a18ba19486450adfed13f71f2ce6da346bdc33a07da5134ca1f32b75fd8dc",
+          "wait": "ACCEPTED",
+          "seconds": 14.6,
+          "note": ""
+        },
+        {
+          "fn": "fund_mandate",
+          "by": "client",
+          "hash": "0xc340bc5b117199c6ff3a50f329e885863955d6922d6250034ac0acc19ef4fb16",
+          "wait": "ACCEPTED",
+          "seconds": 30.6,
+          "note": ""
+        },
+        {
+          "fn": "accept_mandate",
+          "by": "operator",
+          "hash": "0x10115fba6284fc5964df5a2c675f590c3790fbcd029d92e576bd0d3cb46d1f9e",
+          "wait": "ACCEPTED",
+          "seconds": 37.3,
+          "note": ""
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x95d8fefdb305b99a4b467e64c7815db9f189b26186112af68bf6a728be1b1952",
+          "wait": "ACCEPTED",
+          "seconds": 34.7,
+          "note": "C1 ← northwind-report.md"
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x8bf1b627f2de9942e903f47cb0ce3fffc77f78f5d7fecb6dc543670bdf52c286",
+          "wait": "ACCEPTED",
+          "seconds": 31,
+          "note": "C2 ← figures-sourced.md"
+        },
+        {
+          "fn": "submit_evidence",
+          "by": "operator",
+          "hash": "0x57254fc97636ace757308dae5009796644e30dde16a1852279a27e7fbeba6ae8",
+          "wait": "ACCEPTED",
+          "seconds": 24.3,
+          "note": "C3 ← exec-summary.md"
+        },
+        {
+          "fn": "submit_deliverable",
+          "by": "operator",
+          "hash": "0xbbdbffe89947042bf06f518e17b9caf76a4a1778e315050988a140406b2990d7",
+          "wait": "ACCEPTED",
+          "seconds": 28.4,
+          "note": ""
+        },
+        {
+          "fn": "claim_unreviewed_delivery",
+          "by": "operator",
+          "hash": "0x0c5cbf40c0b0124ebb7c90b9fe59aa737721e66376939e32e1c943ed1ccb8a5f",
+          "wait": "ACCEPTED",
+          "seconds": 57.6,
+          "note": ""
+        },
+        {
+          "fn": "settle",
+          "by": "operator",
+          "hash": "0x68d2389c2e1e60403e23460e0f9e1ca4d126cc9ccef68bf3f9a5dad7ae0611b3",
+          "wait": "FINALIZED",
+          "seconds": 71.8,
+          "note": ""
+        }
+      ],
+      "walls": [
+        {
+          "label": "claim inside the review window",
+          "fn": "claim_unreviewed_delivery",
+          "hash": "0x92c1f7586a4910a6924c7b58f76dc9cec473c2f286c04c497d65b39eb270d0f4",
+          "refusal": "the client's review window is still open",
+          "ok": true
+        },
+        {
+          "label": "contest after the review window",
+          "fn": "open_contest",
+          "hash": "0x364d2533a76c1cada7eb5689cb4d87dce0ac37ff4ad2c4d51d5a717c8d50c533",
+          "refusal": "the review window has closed; a contest can no longer be opened",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "code": "H",
+      "title": "Refusal walls",
+      "path": "refusal walls on a funded mandate",
+      "status": "complete",
+      "error": null,
+      "mandate": "FLK-000027",
+      "outcome": "all walls held · cancelled cleanly",
+      "actors": {
+        "client": "0xE7310ac69F96d9DfC0144327Bc7A1548f8188fA6",
+        "operator": "0x831ff1BAdCC1383C7686b2a2E13a558AeBe23863",
+        "keeper": "0x61b475c2EF2C51ce0FD2e660345CBFFB53Da4B23"
+      },
+      "steps": [
+        {
+          "fn": "create_mandate",
+          "by": "client",
+          "hash": "0x5c952246f0aa824a35f61c354f4cf64b0acc63764de5b8cb6e5a5f8271a14918",
+          "wait": "ACCEPTED",
+          "seconds": 21.1,
+          "note": ""
+        },
+        {
+          "fn": "fund_mandate",
+          "by": "client",
+          "hash": "0xd693220dea5bfdfec9a42a5267bfc0a85c41853c2d0c976cc053fee9e4821afd",
+          "wait": "ACCEPTED",
+          "seconds": 30.9,
+          "note": ""
+        },
+        {
+          "fn": "cancel_mandate",
+          "by": "client",
+          "hash": "0x56cfe3e20bed2e52d6c0fd304718a46c15d6c39f9355091c85235a76c923485b",
+          "wait": "ACCEPTED",
+          "seconds": 21.2,
+          "note": ""
+        }
+      ],
+      "walls": [
+        {
+          "label": "fund_mandate by a stranger",
+          "fn": "fund_mandate",
+          "hash": "0x076b047cf7a1b2f24501cd8d8b43ec9ed87faf5198275701468d87c35bc24a98",
+          "refusal": "only the client of this mandate may do that",
+          "ok": true
+        },
+        {
+          "label": "fund_mandate with a short payment",
+          "fn": "fund_mandate",
+          "hash": "0x17b35e34f2145c7e2fb16a932843fb4103af41680f7e4c9acc857da4106b0a98",
+          "refusal": "exact payment required: expected 2000000000000000000 wei, received 1999999999999999999",
+          "ok": true
+        },
+        {
+          "label": "fund_mandate twice",
+          "fn": "fund_mandate",
+          "hash": "0x545441149e1b5d7bf78e58a8c194581df3f7cbd883e3aaf25f0849a3c781e8d5",
+          "refusal": "this mandate is ESCROWED; this action needs DRAFT",
+          "ok": true
+        },
+        {
+          "label": "approve_work before delivery",
+          "fn": "approve_work",
+          "hash": "0x02d32b30dfb0a05a8e4ad8b3c7f9e36db96e1a9e8d33bbf623a57d89ed3768d7",
+          "refusal": "this mandate is ESCROWED; this action needs DELIVERED",
+          "ok": true
+        },
+        {
+          "label": "adjudicate before any seal",
+          "fn": "adjudicate",
+          "hash": "0x046a01f98e500d54d4ab8ed7cbd50976b688597a5b807b1bfe97214a1e2217e9",
+          "refusal": "this mandate is ESCROWED; this action needs RECORD_SEALED or APPEALED",
+          "ok": true
+        },
+        {
+          "label": "settle an unfinished mandate",
+          "fn": "settle",
+          "hash": "0x6a5486d82265015cc80692d52c8e2b3a6f9a382f7f5d92b9071d118b007eda83",
+          "refusal": "this mandate is ESCROWED; this action needs APPROVED or FINALIZED",
+          "ok": true
+        }
+      ]
+    }
+  ],
+  "failedChecks": []
+}

@@ -181,7 +181,7 @@ mut("M63", "evidence", "independence counts pages instead of sites",
 mut("M64", "evidence", "non-success HTTP still carries a body",
     ("    if code is not None and (code < 200 or code >= 300):\n        return (F_NON_SUCCESS, \"\")", "    if False:\n        return (F_NON_SUCCESS, \"\")"), EVID)
 mut("M65", "evidence", "receipt cap not enforced",
-    ("        if len(bucket) >= int(m.max_receipts):\n            refuse(f\"this mandate already holds its maximum of {int(m.max_receipts)} receipts\")\n", ""), EVID)
+    ("        if role != \"DELIVERABLE\" and filed_by_party >= int(m.max_receipts):", "        if False:"), EVID)
 mut("M66", "evidence", "loopback and private hosts accepted",
     ("    if host == \"localhost\" or host.endswith(_BLOCKED_SUFFIX):\n        refuse(\"loopback and private-network hosts are not allowed\")\n", ""), EVID)
 mut("M67", "evidence", "embedded credentials accepted in URLs",
